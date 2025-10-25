@@ -11,7 +11,7 @@ import { CalcService } from './calc.service';
 import { CalcRequestDto } from './dto/calc.dto';
 
 @Controller('api/calc')
-@UseGuards(AuthGuard('jwt'))
+// @UseGuards(AuthGuard('jwt'))
 export class CalcController {
     constructor(private readonly calcService: CalcService) { }
 
