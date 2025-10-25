@@ -1,0 +1,28 @@
+services:
+  main-api:
+    build:
+      context: ./main-api
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./main-api/.env
+    depends_on:
+      - mongodb
+    volumes:
+      - ./main-api:/app
+      - /app/node_modules
+    restart: unless-stopped
+  mongodb:
+    image: mongo:7
+    container_name: dlc-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=dlc
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
