@@ -16,6 +16,7 @@ import { CalcModule } from './calc/calc.module';
         uri: config.get<string>('MONGODB_URI', 'mongodb://localhost:27017/dlc'),
       }),
     }),
+    // TODO: [Очередь] Добавить RedisModule или BullMQModule здесь
     AuthModule,
     CalcModule,
   ],

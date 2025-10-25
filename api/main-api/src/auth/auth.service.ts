@@ -20,7 +20,7 @@ export class AuthService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private jwtService: JwtService,
     private whitelistService: WhitelistService
-  ) { }
+  ) {}
 
   async findById(id: string) {
     return this.userModel.findById(id).select('-password');
