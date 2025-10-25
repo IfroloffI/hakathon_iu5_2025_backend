@@ -25,6 +25,8 @@ ENV PATH=/root/.local/bin:$PATH
 
 COPY . .
 
+ENV PYTHONUNBUFFERED=1
+
 # RUN pip install grpcio-tools && \
 #     python -m grpc_tools.protoc -I ../contracts --python_out=. --grpc_python_out=. ../contracts/calc.proto
 
