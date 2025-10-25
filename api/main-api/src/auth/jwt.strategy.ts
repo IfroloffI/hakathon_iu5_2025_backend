@@ -28,12 +28,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super(options);
   }
 
-  async validate(payload: any): Promise<{ userId: string; jti: string }> {
+  async validate(payload: any): Promise<{
+    userId: string;
+    jti: string;
+    username: string;
+    email: string;
+  }> {
     if (!payload) {
       throw new UnauthorizedException('Invalid token payload');
     }
 
-    const { userId, jti } = payload;
+    const { userId, jti, username, email } = payload;
 
     if (!userId || typeof userId !== 'string') {
       throw new UnauthorizedException('Token missing or invalid userId');
@@ -43,10 +48,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Token missing or invalid jti');
     }
 
+    if (!username || typeof username !== 'string') {
+      throw new UnauthorizedException('Token missing or invalid username');
+    }
+
+    if (!email || typeof email !== 'string') {
+      throw new UnauthorizedException('Token missing or invalid email');
+    }
+
     if (!this.whitelistService.has(jti)) {
       throw new UnauthorizedException('Token revoked or expired');
     }
 
-    return { userId, jti };
+    return { userId, jti, username, email };
   }
 }

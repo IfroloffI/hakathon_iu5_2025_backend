@@ -5,15 +5,12 @@ import {
   UseGuards,
   Get,
   Req,
-  Res,
-  HttpStatus,
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { Request, Response } from 'express';
 import { RequestWithUser } from './types';
 
 @Controller('api/auth')
@@ -33,24 +30,17 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Get('check')
   async check(@Req() req: RequestWithUser) {
-    const user = await this.authService.findUserById(req.user.userId);
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
     return {
-      id: user._id.toHexString(),
-      email: user.email,
+      id: req.user.userId,
+      email: req.user.email,
+      username: req.user.username,
     };
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('logout')
   logout(@Req() req: RequestWithUser) {
-    const jti = req.user['jti'];
-    if (typeof jti !== 'string') {
-      throw new UnauthorizedException('Invalid session');
-    }
+    const jti = req.user.jti;
     this.authService.logout(jti);
     return { message: 'Logged out' };
   }
