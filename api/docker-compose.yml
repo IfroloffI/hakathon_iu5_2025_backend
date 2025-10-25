@@ -10,6 +10,15 @@ services:
     depends_on:
       - mongodb
     restart: unless-stopped
+  calc-api:
+    build:
+      context: ./calc-api
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    # volumes:
+    #   - ../contracts:/contracts:ro
+    restart: unless-stopped
   mongodb:
     image: mongo:7
     container_name: dlc-mongo

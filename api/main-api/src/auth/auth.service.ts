@@ -20,7 +20,7 @@ export class AuthService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private jwtService: JwtService,
     private whitelistService: WhitelistService
-  ) {}
+  ) { }
 
   async findById(id: string) {
     return this.userModel.findById(id).select('-password');
@@ -31,7 +31,6 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto): Promise<{ access_token: string }> {
-    // Проверяем и email и username
     const existingUser = await this.userModel.findOne({
       $or: [{ email: dto.email }, { username: dto.username }],
     });
@@ -51,6 +50,8 @@ export class AuthService {
       username: dto.username,
       password: hashedPassword,
     });
+
+    const savedUser = await this.userModel.findById(user._id);
 
     const { token, jti } = this.generateToken(user);
     this.whitelistService.add(jti);
@@ -86,12 +87,14 @@ export class AuthService {
 
   private generateToken(user: UserDocument): { token: string; jti: string } {
     const jti = crypto.randomUUID();
+
     const payload = {
       userId: user._id.toString(),
       jti,
       username: user.username,
       email: user.email,
     };
+
     const token = this.jwtService.sign(payload);
     return { token, jti };
   }

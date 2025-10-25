@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package calc;
+
+service CometCalculator {
+  rpc CalculateOrbit(CalculateRequest) returns (CalculateResponse);
+}
+
+message Observation {
+  double ra_hours = 1;      // прямое восхождение в часах
+  double dec_degrees = 2;   // склонение в градусах
+  double timestamp = 3;     // Unix timestamp (секунды)
+}
+
+message CalculateRequest {
+  repeated Observation observations = 1;
+}
+
+message CalculateResponse {
+  bool success = 1;
+  string error = 2;
+
+  // Орбитальные параметры
+  double semi_major_axis_au = 3;   // большая полуось, а.е.
+  double eccentricity = 4;
+  double inclination_deg = 5;
+  double longitude_ascending_node_deg = 6;
+  double argument_perihelion_deg = 7;
+  double perihelion_passage_jd = 8; // Юлианская дата
+
+  // Сближение с Землёй
+  double closest_approach_jd = 9;   // дата сближения (JD)
+  double closest_distance_au = 10;  // расстояние в а.е.
+}
