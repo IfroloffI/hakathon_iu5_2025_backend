@@ -5,6 +5,7 @@ import {
     UseGuards,
     HttpException,
     HttpStatus,
+    BadRequestException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CalcService } from './calc.service';
@@ -18,7 +19,7 @@ export class CalcController {
     @Post()
     async calculate(@Body() body: CalcRequestDto) {
         if (!body.observations || body.observations.length < 5) {
-            throw new Error('At least 5 observations required');
+            throw new BadRequestException('At least 5 observations required');
         }
         return this.calcService.calculateOrbit(body.observations);
     }

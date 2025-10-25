@@ -70,20 +70,18 @@
     "typescript-eslint": "^8.20.0"
   },
   "jest": {
+    "testRegex": "test/.*\\.spec\\.ts$",
     "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
+      "ts",
+      "js"
     ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.ts$": "ts-jest"
     },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
+    "roots": [
+      "<rootDir>/src",
+      "<rootDir>/test"
     ],
-    "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }
 }
