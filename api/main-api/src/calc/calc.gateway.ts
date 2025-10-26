@@ -50,7 +50,7 @@ export class CalcGateway implements OnGatewayConnection {
         return;
       }
 
-      client.data.auth = payload;
+      client.emit('user', { message: `${payload.userid}` });
     } catch (e) {
       client.emit('error', { message: 'Invalid or expired token' });
       client.disconnect(true);
@@ -73,9 +73,8 @@ export class CalcGateway implements OnGatewayConnection {
     @MessageBody() rawPayload: any,
     @ConnectedSocket() client: Socket
   ) {
-    const user = client.data.auth;
-    console.log(user.userId);
-    if (!user) {
+    const userId = client.handshake.query?.userid;
+    if (!userId) {
       this.sendJsonEvent(client, 'error', { message: 'Unauthorized' });
       return;
     }
@@ -107,7 +106,7 @@ export class CalcGateway implements OnGatewayConnection {
 
     try {
       const job = new this.calcModel({
-        userId: user.userId,
+        userId: userId,
         status: 'queued',
         observations: dto.observations,
       });
@@ -116,7 +115,7 @@ export class CalcGateway implements OnGatewayConnection {
 
       await this.redisService.addToStream('calculation_jobs', {
         jobId,
-        userId: user.userId,
+        userId: userId,
         socketId: client.id,
         observations: JSON.stringify(dto.observations),
       });
