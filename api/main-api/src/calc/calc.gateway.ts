@@ -73,10 +73,15 @@ export class CalcGateway implements OnGatewayConnection {
     @MessageBody() rawPayload: any,
     @ConnectedSocket() client: Socket
   ) {
-    const userId = client.handshake.query?.userid;
+    let userId = client.handshake.query?.userid;
+    console.log(userId);
     if (!userId) {
       this.sendJsonEvent(client, 'error', { message: 'Unauthorized' });
       return;
+    }
+    if (Array.isArray(userId)) {
+      userId = userId[1];
+      console.log("USER ID IS ARRAY!!!", userId);
     }
 
     let payload: any;
