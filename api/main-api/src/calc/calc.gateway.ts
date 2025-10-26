@@ -45,7 +45,7 @@ export class CalcGateway implements OnGatewayConnection {
     try {
       const payload = await this.jwtService.verifyAsync(token);
 
-      if (!this.whitelistService.has(payload.jti)) {
+      if (!(await this.whitelistService.has(payload.jti))) {
         client.emit('error', { message: 'Token revoked' });
         client.disconnect(true);
         return;

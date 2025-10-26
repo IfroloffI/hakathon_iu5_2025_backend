@@ -56,7 +56,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Token missing or invalid email');
     }
 
-    if (!this.whitelistService.has(jti)) {
+    if (!(await this.whitelistService.has(jti))) {
       throw new UnauthorizedException('Token revoked or expired');
     }
 
