@@ -76,7 +76,7 @@ export class CalcGateway implements OnGatewayConnection {
   ) {
     console.log('User from handshake:', client.handshake.auth);
     const user = client.handshake.auth;
-    if (!user?.userId) {
+    if (!user) {
       this.sendJsonEvent(client, 'error', { message: 'Unauthorized' });
       return;
     }
