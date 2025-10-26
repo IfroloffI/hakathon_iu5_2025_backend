@@ -25,7 +25,7 @@ export class CalcController {
     if (!body.observations || body.observations.length < 5) {
       throw new BadRequestException('At least 5 observations required');
     }
-    return this.calcService.calculateOrbit(body.observations, body.days_ahead);
+    return this.calcService.calculateOrbitOld(body.observations);
   }
 
   @Get('list')
