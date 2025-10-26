@@ -50,7 +50,7 @@ export class CalcGateway implements OnGatewayConnection {
         return;
       }
 
-      client.emit('user', { message: `${payload.userid}` });
+      client.emit('user', { message: `${payload.userId}` });
     } catch (e) {
       client.emit('error', { message: 'Invalid or expired token' });
       client.disconnect(true);
