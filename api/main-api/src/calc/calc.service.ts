@@ -45,8 +45,8 @@ export class CalcService {
 
   async calculateOrbit(observations: any[], days_ahead?: number): Promise<Record<string, any>> {
     return new Promise((resolve) => {
-      this.client.CalculateOrbit({ 
-        observations, 
+      this.client.CalculateOrbit({
+        observations,
         days_ahead: days_ahead || 1460 // 4 года по умолчанию
       }, (err, response) => {
         if (err) {
@@ -61,6 +61,7 @@ export class CalcService {
   async findAllByUserId(userId: string): Promise<Calc[]> {
     return this.calcModel
       .find({
+        userId,
         status: { $ne: 'deleted' },
       })
       .sort({ updatedAt: -1 })
