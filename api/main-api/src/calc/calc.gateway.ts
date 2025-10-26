@@ -29,21 +29,21 @@ export class CalcGateway implements OnGatewayConnection {
     private whitelistService: WhitelistService,
     private redisService: RedisService,
     @InjectModel(Calc.name) private calcModel: Model<Calc>
-  ) {}
+  ) { }
 
   async handleConnection(client: Socket) {
-    const authHeader = client.handshake.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    let authToken = client.handshake.query?.token;
+    if (!authToken || !(typeof authToken === 'string')) {
       client.emit('error', {
         message: 'Authorization header missing or invalid',
       });
       client.disconnect(true);
       return;
     }
+    authToken = `Bearer ${authToken}`;
 
-    const token = authHeader.substring(7);
     try {
-      const payload = await this.jwtService.verifyAsync(token);
+      const payload = await this.jwtService.verifyAsync(authToken);
 
       if (!(await this.whitelistService.has(payload.jti))) {
         client.emit('error', { message: 'Token revoked' });
