@@ -20,12 +20,26 @@ export class CalcController {
   constructor(private readonly calcService: CalcService) {}
 
   @Post()
-  @UseGuards()
-  async calculate(@Body() body: CalcRequestDto) {
-    if (!body.observations || body.observations.length < 5) {
-      throw new BadRequestException('At least 5 observations required');
+  async calculate(@Body() body: CalcRequestDto, @Req() req: RequestWithUser) {
+    if (!body.observations || body.observations.length < 3) {
+      throw new BadRequestException('At least 3 observations required');
     }
-    return this.calcService.calculateOrbitOld(body.observations);
+
+    // Сохраняем в БД
+    const job = await this.calcService.calcModel.create({
+      userId: req.user.userId,
+      observations: body.observations,
+      status: 'pending',
+    });
+
+    // Отправляем в Redis ВСЕ данные
+    await this.redis.xadd('calculation_jobs', '*', {
+      jobId: job._id.toString(),
+      socketId: 'temp', // замени на реальный, если есть
+      obs: JSON.stringify(body.observations),
+    });
+
+    return { jobId: job._id.toString() };
   }
 
   @Get('list')

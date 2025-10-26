@@ -68,29 +68,27 @@ export class CalcWorkerService implements OnModuleInit {
   private async processJob(id: string, fields: Record<string, string>) {
     const jobId = fields.jobId;
     const socketId = fields.socketId;
-    const obs = JSON.parse(fields.obs || '[]');
 
     this.logger.log(`Processing job ${jobId}`);
 
     try {
-      await this.calcService.updateCalc(jobId, { status: 'processing' });
-      this.notificationService.emitCalcUpdate(socketId, 'status', {
-        jobId,
-        status: 'processing',
-      });
+      // Читаем документ из MongoDB
+      const calcDoc = await this.calcService.calcModel.findById(jobId).lean();
+      if (!calcDoc) throw new Error(`Job ${jobId} not found in DB`);
 
-      const result = await this.calcService.calculateOrbit(obs);
+      const observations = calcDoc.observations || [];
+      this.logger.debug('Observations from DB:', observations);
+
+      await this.calcService.updateCalc(jobId, { status: 'processing' });
+
+      const result = await this.calcService.calculateOrbit(observations);
 
       await this.calcService.updateCalc(jobId, {
         status: 'completed',
-        ...(typeof result === 'object' ? result : { raw: String(result) }),
+        ...result,
       });
 
-      this.notificationService.emitCalcUpdate(socketId, 'result', {
-        jobId,
-        ...(typeof result === 'object' ? result : { raw: String(result) }),
-      });
-
+      this.notificationService.emitCalcUpdate(socketId, 'result', { jobId, ...result });
       await this.client.xAck(this.streamKey, this.groupName, id);
       this.logger.log(`Job ${jobId} processed and acknowledged`);
     } catch (err) {
