@@ -21,7 +21,7 @@ const calcProto: any = grpc.loadPackageDefinition(packageDefinition).calc;
 export class CalcService {
   private client: any;
 
-  constructor(@InjectModel(Calc.name) private calcModel: Model<CalcDocument>) {
+  constructor(@InjectModel(Calc.name) public calcModel: Model<CalcDocument>) {
     const host = process.env.CALC_API_HOST || 'localhost:50051';
     this.client = new calcProto.CometCalculator(
       host,
