@@ -54,7 +54,7 @@ export class AuthService {
     const savedUser = await this.userModel.findById(user._id);
 
     const { token, jti } = this.generateToken(user);
-    this.whitelistService.add(jti);
+    await this.whitelistService.add(jti);
     return { access_token: token };
   }
 
@@ -73,15 +73,15 @@ export class AuthService {
     }
 
     const { token, jti } = this.generateToken(user);
-    this.whitelistService.add(jti);
+    await this.whitelistService.add(jti);
     return { access_token: token };
   }
 
-  logout(jti: string): void {
-    this.whitelistService.del(jti);
+  async logout(jti: string): Promise<void> {
+    await this.whitelistService.del(jti);
   }
 
-  isTokenValid(jti: string): boolean {
+  async isTokenValid(jti: string): Promise<boolean> {
     return this.whitelistService.has(jti);
   }
 
