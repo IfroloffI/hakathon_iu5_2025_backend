@@ -43,9 +43,12 @@ export class CalcService {
     });
   }
 
-  async calculateOrbit(observations: any[]): Promise<Record<string, any>> {
+  async calculateOrbit(observations: any[], days_ahead?: number): Promise<Record<string, any>> {
     return new Promise((resolve) => {
-      this.client.CalculateOrbit({ observations }, (err, response) => {
+      this.client.CalculateOrbit({ 
+        observations, 
+        days_ahead: days_ahead || 1460 // 4 года по умолчанию
+      }, (err, response) => {
         if (err) {
           resolve({ success: false, error: err.message });
         } else {

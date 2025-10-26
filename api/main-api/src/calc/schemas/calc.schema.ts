@@ -22,7 +22,20 @@ export class Calc {
     ra_hours: number;
     dec_degrees: number;
     timestamp: number;
+    // Горизонтальные координаты (альтернатива RA/Dec)
+    alt_degrees?: number;
+    az_degrees?: number;
+    // Место наблюдения
+    observer_lat_deg?: number;
+    observer_lon_deg?: number;
+    observer_height_m?: number;
+    // Точность измерения
+    uncertainty_arcsec?: number;
   }[];
+
+  // --- Параметры запроса ---
+  @Prop()
+  days_ahead?: number;
 
   // --- Результаты ---
   @Prop()
@@ -44,6 +57,11 @@ export class Calc {
   @Prop()
   perihelion_passage_jd?: number;
 
+  // --- Метрики качества ---
+  @Prop()
+  rms_residual_deg?: number;
+
+  // --- Сближение с Землёй ---
   @Prop()
   closest_approach_jd?: number;
   @Prop()

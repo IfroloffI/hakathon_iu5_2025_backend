@@ -42,13 +42,24 @@ describe('CalcService', () => {
       longitude_ascending_node_deg: 45.0,
       argument_perihelion_deg: 80.0,
       perihelion_passage_jd: 2460500.5,
+      rms_residual_deg: 0.1,
       closest_approach_jd: 2460600.5,
       closest_distance_au: 0.8,
     };
 
-    mockGrpcClient.CalculateOrbit.mockImplementation((_, cb) =>
-      cb(null, mockResponse)
-    );
+    mockGrpcClient.CalculateOrbit.mockImplementation((request, cb) => {
+      expect(request).toEqual({
+        observations: [
+          { ra_hours: 5.1, dec_degrees: 22.1, timestamp: 1729843200 },
+          { ra_hours: 5.2, dec_degrees: 22.2, timestamp: 1729929600 },
+          { ra_hours: 5.3, dec_degrees: 22.3, timestamp: 1730016000 },
+          { ra_hours: 5.4, dec_degrees: 22.4, timestamp: 1730102400 },
+          { ra_hours: 5.5, dec_degrees: 22.5, timestamp: 1730188800 },
+        ],
+        days_ahead: 1460
+      });
+      cb(null, mockResponse);
+    });
 
     const result = await service.calculateOrbit([
       { ra_hours: 5.1, dec_degrees: 22.1, timestamp: 1729843200 },
@@ -59,5 +70,24 @@ describe('CalcService', () => {
     ]);
 
     expect(result).toEqual(mockResponse);
+  });
+
+  it('should pass custom days_ahead parameter', async () => {
+    const mockResponse = { success: true };
+    
+    mockGrpcClient.CalculateOrbit.mockImplementation((request, cb) => {
+      expect(request.days_ahead).toBe(730); // 2 года
+      cb(null, mockResponse);
+    });
+
+    await service.calculateOrbit([
+      { ra_hours: 5.1, dec_degrees: 22.1, timestamp: 1729843200 },
+      { ra_hours: 5.2, dec_degrees: 22.2, timestamp: 1729929600 },
+      { ra_hours: 5.3, dec_degrees: 22.3, timestamp: 1730016000 },
+      { ra_hours: 5.4, dec_degrees: 22.4, timestamp: 1730102400 },
+      { ra_hours: 5.5, dec_degrees: 22.5, timestamp: 1730188800 },
+    ], 730);
+
+    expect(mockGrpcClient.CalculateOrbit).toHaveBeenCalled();
   });
 });
