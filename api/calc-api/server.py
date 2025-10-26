@@ -224,7 +224,38 @@ def closest_approach(orbit: Orbit, start_utc: Time, days: int = 1488) -> Tuple[T
 class CometCalculatorServicer(calc_pb2_grpc.CometCalculatorServicer):
     def CalculateOrbit(self, request, context):
         try:
+            print("=" * 60)
+            print("🔍 ВХОДЯЩИЕ ДАННЫЕ:")
+            print(f"Количество наблюдений: {len(request.observations)}")
+            
+            # Логируем каждое наблюдение
+            for i, obs in enumerate(request.observations):
+                print(f"  Наблюдение {i+1}:")
+                print(f"    RA: {obs.ra_hours:.6f} часов")
+                print(f"    Dec: {obs.dec_degrees:.6f} градусов")
+                print(f"    Timestamp: {obs.timestamp} (Unix)")
+                
+                # Логируем дополнительные поля если они есть
+                if hasattr(obs, 'alt_degrees') and obs.alt_degrees:
+                    print(f"    Alt: {obs.alt_degrees:.6f} градусов")
+                if hasattr(obs, 'az_degrees') and obs.az_degrees:
+                    print(f"    Az: {obs.az_degrees:.6f} градусов")
+                if hasattr(obs, 'observer_lat_deg') and obs.observer_lat_deg:
+                    print(f"    Observer Lat: {obs.observer_lat_deg:.6f} градусов")
+                if hasattr(obs, 'observer_lon_deg') and obs.observer_lon_deg:
+                    print(f"    Observer Lon: {obs.observer_lon_deg:.6f} градусов")
+                if hasattr(obs, 'uncertainty_arcsec') and obs.uncertainty_arcsec:
+                    print(f"    Uncertainty: {obs.uncertainty_arcsec:.3f} arcsec")
+                print()
+            
+            # Логируем параметры запроса
+            if hasattr(request, 'days_ahead') and request.days_ahead:
+                print(f"Days ahead: {request.days_ahead}")
+            else:
+                print("Days ahead: не указан (используется значение по умолчанию 1488)")
+            
             if len(request.observations) < 5:
+                print("❌ ОШИБКА: Нужно ≥5 наблюдений")
                 return calc_pb2.CalculateResponse(success=False, error="Нужно ≥5 наблюдений")
 
             obs_list = [
@@ -232,14 +263,18 @@ class CometCalculatorServicer(calc_pb2_grpc.CometCalculatorServicer):
                 for o in sorted(request.observations, key=lambda r: r.timestamp)
             ]
 
+            print("🔄 Начинаем расчет орбиты...")
             orbit, elems, _t0 = estimate_orbit(obs_list)
+            
+            print("🔄 Ищем ближайшее сближение с Землей...")
             t_min, d_min_au = closest_approach(
                 orbit,
                 start_utc=Time(obs_list[0].ts_unix, format="unix", scale="utc")
                 # 'days' not in proto -> use function default (1488)
             )
 
-            return calc_pb2.CalculateResponse(
+            # Формируем ответ
+            response = calc_pb2.CalculateResponse(
                 success=True,
                 error="",
                 semi_major_axis_au=elems["a_AU"],
@@ -251,8 +286,25 @@ class CometCalculatorServicer(calc_pb2_grpc.CometCalculatorServicer):
                 closest_approach_jd=t_min.jd,
                 closest_distance_au=d_min_au,
             )
+            
+            # Логируем результаты
+            print("✅ РЕЗУЛЬТАТЫ ВЫЧИСЛЕНИЙ:")
+            print(f"  Успех: {response.success}")
+            print(f"  Большая полуось: {response.semi_major_axis_au:.6f} а.е.")
+            print(f"  Эксцентриситет: {response.eccentricity:.6f}")
+            print(f"  Наклонение: {response.inclination_deg:.6f} градусов")
+            print(f"  Долгота восходящего узла: {response.longitude_ascending_node_deg:.6f} градусов")
+            print(f"  Аргумент перицентра: {response.argument_perihelion_deg:.6f} градусов")
+            print(f"  Прохождение перигелия: {response.perihelion_passage_jd:.6f} JD")
+            print(f"  Ближайшее сближение: {response.closest_approach_jd:.6f} JD")
+            print(f"  Расстояние при сближении: {response.closest_distance_au:.6f} а.е.")
+            print("=" * 60)
+            
+            return response
 
         except Exception as e:
+            print(f"❌ ОШИБКА ВЫЧИСЛЕНИЙ: {str(e)}")
+            print("=" * 60)
             return calc_pb2.CalculateResponse(success=False, error=str(e))
 
 

@@ -32,6 +32,7 @@ export class CalcService {
   async calculateOrbitOld(
     observations: { ra_hours: number; dec_degrees: number; timestamp: number }[]
   ) {
+    console.log('calculateOrbitOld - observations:', JSON.stringify(observations, null, 2));
     return new Promise((resolve) => {
       this.client.CalculateOrbit({ observations }, (err, response) => {
         if (err) {
@@ -44,6 +45,7 @@ export class CalcService {
   }
 
   async calculateOrbit(observations: any[]): Promise<Record<string, any>> {
+    console.log('calculateOrbit - observations:', JSON.stringify(observations, null, 2));
     return new Promise((resolve) => {
       this.client.CalculateOrbit({ observations }, (err, response) => {
         if (err) {
