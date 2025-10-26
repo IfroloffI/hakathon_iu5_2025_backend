@@ -32,7 +32,7 @@ export class CalcGateway implements OnGatewayConnection {
   ) { }
 
   async handleConnection(client: Socket) {
-    let authToken = client.handshake.query?.token;
+    const authToken = client.handshake.query?.token;
     if (!authToken || !(typeof authToken === 'string')) {
       client.emit('error', {
         message: 'Authorization header missing or invalid',
@@ -40,7 +40,6 @@ export class CalcGateway implements OnGatewayConnection {
       client.disconnect(true);
       return;
     }
-    authToken = `Bearer ${authToken}`;
 
     try {
       const payload = await this.jwtService.verifyAsync(authToken);
