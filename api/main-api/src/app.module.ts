@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CalcModule } from './calc/calc.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { CalcModule } from './calc/calc.module';
         uri: config.get<string>('MONGODB_URI', 'mongodb://localhost:27017/dlc'),
       }),
     }),
-    // TODO: [Очередь] Добавить RedisModule или BullMQModule здесь
+    RedisModule,
     AuthModule,
     CalcModule,
   ],

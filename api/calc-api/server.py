@@ -52,8 +52,8 @@ def serve():
     calc_pb2_grpc.add_CometCalculatorServicer_to_server(
         CometCalculatorServicer(), server
     )
-    server.add_insecure_port("[::]:50052")
-    print("Python gRPC server running on port 50052")
+    server.add_insecure_port("[::]:50051")
+    print("Python gRPC server running on port 50051")
     server.start()
     server.wait_for_termination()
 
