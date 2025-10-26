@@ -60,6 +60,7 @@ export class CalcService {
   async findAllByUserId(userId: string): Promise<Calc[]> {
     return this.calcModel
       .find({
+        userId,
         status: { $ne: 'deleted' },
       })
       .sort({ updatedAt: -1 })

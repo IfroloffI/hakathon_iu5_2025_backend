@@ -5,6 +5,7 @@ import {
   MessageBody,
   ConnectedSocket,
   OnGatewayConnection,
+  OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { InjectModel } from '@nestjs/mongoose';
@@ -20,7 +21,7 @@ import { RedisService } from '../redis/redis.service';
 type EventEmitter = Server | Socket;
 
 @WebSocketGateway({ namespace: '/api/calc' })
-export class CalcGateway implements OnGatewayConnection {
+export class CalcGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
@@ -30,6 +31,8 @@ export class CalcGateway implements OnGatewayConnection {
     private redisService: RedisService,
     @InjectModel(Calc.name) private calcModel: Model<Calc>
   ) { }
+
+  private socketToUserMap = new Map<string, string>();
 
   async handleConnection(client: Socket) {
     const authToken = client.handshake.query?.token;
@@ -50,11 +53,17 @@ export class CalcGateway implements OnGatewayConnection {
         return;
       }
 
+      this.socketToUserMap.set(client.id, payload.userId);
+
       client.emit('user', { message: `${payload.userId}` });
     } catch (e) {
       client.emit('error', { message: 'Invalid or expired token' });
       client.disconnect(true);
     }
+  }
+
+  handleDisconnect(client: Socket) {
+    this.socketToUserMap.delete(client.id);
   }
 
   private jobToSocketMap = new Map<string, string>();
@@ -73,15 +82,11 @@ export class CalcGateway implements OnGatewayConnection {
     @MessageBody() rawPayload: any,
     @ConnectedSocket() client: Socket
   ) {
-    let userId = client.handshake.query?.userId;
+    const userId = this.socketToUserMap.get(client.id);
     console.log(userId);
     if (!userId) {
       this.sendJsonEvent(client, 'error', { message: 'Unauthorized' });
       return;
-    }
-    if (Array.isArray(userId)) {
-      userId = userId[1];
-      console.log("USER ID IS ARRAY!!!", userId);
     }
 
     let payload: any;
