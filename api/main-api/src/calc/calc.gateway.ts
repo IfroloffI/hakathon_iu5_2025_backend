@@ -51,7 +51,6 @@ export class CalcGateway implements OnGatewayConnection {
       }
 
       client.handshake.auth = payload;
-      console.log('User from handshake:', client.handshake.auth);
     } catch (e) {
       client.emit('error', { message: 'Invalid or expired token' });
       client.disconnect(true);
@@ -74,8 +73,8 @@ export class CalcGateway implements OnGatewayConnection {
     @MessageBody() rawPayload: any,
     @ConnectedSocket() client: Socket
   ) {
-    console.log('User from handshake:', client.handshake.auth);
     const user = client.handshake.auth;
+    console.log(user.userId);
     if (!user) {
       this.sendJsonEvent(client, 'error', { message: 'Unauthorized' });
       return;
