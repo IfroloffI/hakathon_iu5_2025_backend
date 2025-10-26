@@ -43,8 +43,8 @@ export class CalcService {
     });
   }
 
-  async calculateOrbit(observations: any[]) {
-    return new Promise((resolve, reject) => {
+  async calculateOrbit(observations: any[]): Promise<Record<string, any>> {
+    return new Promise((resolve) => {
       this.client.CalculateOrbit({ observations }, (err, response) => {
         if (err) {
           resolve({ success: false, error: err.message });
@@ -103,6 +103,20 @@ export class CalcService {
 
     if (result.matchedCount === 0) {
       throw new NotFoundException('Calc record not found or already deleted');
+    }
+  }
+
+  async updateCalc(jobId: string, update: Record<string, any>) {
+    try {
+      const updated = await this.calcModel.findByIdAndUpdate(jobId, update, {
+        new: true,
+      });
+      if (!updated) {
+        throw new NotFoundException('Job record not found');
+      }
+      return updated;
+    } catch (err) {
+      throw err;
     }
   }
 }

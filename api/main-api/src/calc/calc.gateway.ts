@@ -4,31 +4,68 @@ import {
   SubscribeMessage,
   MessageBody,
   ConnectedSocket,
+  OnGatewayConnection,
 } from '@nestjs/websockets';
-import { Server, Socket, BroadcastOperator, DefaultEventsMap } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Calc } from './schemas/calc.schema';
-import { CalcService } from './calc.service';
 import { CalcRequestDto } from './dto/calc.dto';
 import { validate } from 'class-validator';
+import { JwtService } from '@nestjs/jwt';
 import { plainToInstance } from 'class-transformer';
+import { WhitelistService } from '../auth/whitelist.service';
+import { RedisService } from '../redis/redis.service';
 
-type EventEmitter = Server | Socket | BroadcastOperator<DefaultEventsMap, any>;
+type EventEmitter = Server | Socket;
 
 @WebSocketGateway({ namespace: '/api/calc' })
-export class CalcGateway {
+export class CalcGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
   constructor(
-    @InjectModel(Calc.name) private calcModel: Model<Calc>,
-    private calcService: CalcService
+    private jwtService: JwtService,
+    private whitelistService: WhitelistService,
+    private redisService: RedisService,
+    @InjectModel(Calc.name) private calcModel: Model<Calc>
   ) {}
+
+  async handleConnection(client: Socket) {
+    const authHeader = client.handshake.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      client.emit('error', {
+        message: 'Authorization header missing or invalid',
+      });
+      client.disconnect(true);
+      return;
+    }
+
+    const token = authHeader.substring(7);
+    try {
+      const payload = await this.jwtService.verifyAsync(token);
+
+      if (!(await this.whitelistService.has(payload.jti))) {
+        client.emit('error', { message: 'Token revoked' });
+        client.disconnect(true);
+        return;
+      }
+      (client as any).user = payload;
+    } catch (e) {
+      client.emit('error', { message: 'Invalid or expired token' });
+      client.disconnect(true);
+    }
+  }
+
+  private jobToSocketMap = new Map<string, string>();
+
+  sendToSocket(socketId: string, event: string, data: any) {
+    this.server.to(socketId).emit(event, data);
+  }
 
   private sendJsonEvent(emitter: EventEmitter, event: string, data: any): void {
     const payload = typeof data === 'object' && data !== null ? data : { data };
-    emitter.emit(event, JSON.stringify(payload)); // TODO: после тестов обратно в бинарный payload без обёртки
+    emitter.emit(event, JSON.stringify(payload));
   }
 
   @SubscribeMessage('calculate')
@@ -36,6 +73,12 @@ export class CalcGateway {
     @MessageBody() rawPayload: any,
     @ConnectedSocket() client: Socket
   ) {
+    const user = (client as any).user;
+    if (!user?.userId) {
+      this.sendJsonEvent(client, 'error', { message: 'Unauthorized' });
+      return;
+    }
+
     let payload: any;
     if (typeof rawPayload === 'string') {
       try {
@@ -63,69 +106,25 @@ export class CalcGateway {
 
     try {
       const job = new this.calcModel({
-        userId: 'anonymous',
+        userId: user.userId,
         status: 'queued',
         observations: dto.observations,
       });
       await job.save();
-
       const jobId = job._id.toString();
-      this.sendJsonEvent(client, 'status', { jobId, status: 'queued' });
 
-      // TODO: [Очередь] Отправлять задачу в Redis Streams / RabbitMQ вместо прямого вызова
-      // Сейчас: this.processJob(...)
-      // Будет: this.queueService.addJob({ jobId, observations })
-
-      this.processJob(jobId, client.id).catch((err) => {
-        console.error(`[CalcGateway] Background job failed for ${jobId}:`, err);
+      await this.redisService.addToStream('calculation_jobs', {
+        jobId,
+        userId: user.userId,
+        socketId: client.id,
+        observations: JSON.stringify(dto.observations),
       });
+
+      this.sendJsonEvent(client, 'status', { jobId, status: 'queued' });
     } catch (error) {
       console.error('[CalcGateway] Failed to create job:', error);
       this.sendJsonEvent(client, 'error', {
         message: 'Failed to create calculation job',
-      });
-    }
-  }
-
-  // TODO: [Очередь] Этот метод должен быть в отдельном воркере (worker service),
-  // который слушает очередь, а не вызывается напрямую из WebSocket.
-  // Это позволит масштабировать обработку независимо от API.
-  private async processJob(jobId: string, socketId: string) {
-    try {
-      await this.calcModel.findByIdAndUpdate(jobId, { status: 'processing' });
-      this.sendJsonEvent(this.server.to(socketId), 'status', {
-        jobId,
-        status: 'processing',
-      });
-
-      const job = await this.calcModel.findById(jobId);
-      if (!job || job.status === 'deleted') return;
-
-      const result = await this.calcService.calculateOrbit(job.observations);
-      if (typeof result !== 'object' || result === null) {
-        throw new Error('Invalid response from gRPC service');
-      }
-
-      await this.calcModel.findByIdAndUpdate(jobId, {
-        status: 'completed',
-        ...result,
-      });
-      this.sendJsonEvent(this.server.to(socketId), 'result', {
-        jobId,
-        ...result,
-      });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
-      const errorResult = { success: false, error: errorMessage };
-
-      await this.calcModel.findByIdAndUpdate(jobId, {
-        status: 'failed',
-        ...errorResult,
-      });
-      this.sendJsonEvent(this.server.to(socketId), 'result', {
-        jobId,
-        ...errorResult,
       });
     }
   }

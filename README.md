@@ -2,6 +2,7 @@
 
 python -m venv venv
 
+venv\Scripts\Activate.ps1
 
 ### Activate venv
 **Windows:**
@@ -23,3 +24,7 @@ mkdir -p api/main-api/src/calc/assets/proto
 
 cp api/contracts/calc.proto api/main-api/src/calc/assets/proto/
 
+## Деплой:
+
+docker compose up -d mongodb redis calc-api
+docker compose up -d --build main-api
