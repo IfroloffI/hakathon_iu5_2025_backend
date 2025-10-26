@@ -1,4 +1,4 @@
-Calc Service gRPC Generate:
+## Calc Service gRPC Generate:
 
 python -m venv venv
 
@@ -8,9 +8,13 @@ python -m grpc_tools.protoc -I ../contracts --python_out=. --grpc_python_out=. .
 
 python .\server.py
 
-Main Service gRPC Generate:
+## Main Service gRPC Generate:
 
 mkdir -p api/main-api/src/calc/assets/proto
 
 cp api/contracts/calc.proto api/main-api/src/calc/assets/proto/
 
+## Деплой:
+
+docker compose up -d mongodb redis calc-api
+docker compose up -d --build main-api
