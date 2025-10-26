@@ -6,29 +6,59 @@ service CometCalculator {
   rpc CalculateOrbit(CalculateRequest) returns (CalculateResponse);
 }
 
+// ------------------------------------------------------------
+// Одно наблюдение кометы
+// ------------------------------------------------------------
 message Observation {
-  double ra_hours = 1;      // прямое восхождение в часах
-  double dec_degrees = 2;   // склонение в градусах
-  double timestamp = 3;     // Unix timestamp (секунды)
+  // === Экваториальные координаты (можно задать напрямую)
+  double ra_hours = 1;      // Прямое восхождение, часы (0..24)
+  double dec_degrees = 2;   // Склонение, градусы (-90..+90)
+
+  // === Время наблюдения
+  double timestamp = 3;     // Unix timestamp (секунды, UTC)
+
+  // === Горизонтальные координаты (альтернатива RA/Dec)
+  // Если заданы alt/az и координаты обсерватории,
+  // сервер пересчитает RA/Dec автоматически.
+  double alt_degrees = 4;   // Высота над горизонтом (0..90)
+  double az_degrees = 5;    // Азимут (0 = север, 90 = восток)
+
+  // === Место наблюдения (для топоцентрических поправок)
+  double observer_lat_deg = 6;    // Географическая широта, градусы
+  double observer_lon_deg = 7;    // Географическая долгота, градусы
+  double observer_height_m = 8;   // Высота над уровнем моря, метры
+
+  // === Точность измерения (опционально, для весов в МНК)
+  double uncertainty_arcsec = 9;  // Средняя ошибка, угл. секунды (опционально)
 }
 
+// ------------------------------------------------------------
+// Запрос расчёта орбиты
+// ------------------------------------------------------------
 message CalculateRequest {
   repeated Observation observations = 1;
+  int32 days_ahead = 2; // На сколько дней вперёд искать сближение (по умолчанию 4 года)
 }
 
+// ------------------------------------------------------------
+// Ответ с элементами орбиты и параметрами сближения
+// ------------------------------------------------------------
 message CalculateResponse {
   bool success = 1;
   string error = 2;
 
-  // Орбитальные параметры
-  double semi_major_axis_au = 3;   // большая полуось, а.е.
-  double eccentricity = 4;
-  double inclination_deg = 5;
-  double longitude_ascending_node_deg = 6;
-  double argument_perihelion_deg = 7;
-  double perihelion_passage_jd = 8; // Юлианская дата
+  // === Элементы орбиты
+  double semi_major_axis_au = 3;   // Большая полуось (a), а.е.
+  double eccentricity = 4;         // Эксцентриситет (e)
+  double inclination_deg = 5;      // Наклонение (i)
+  double longitude_ascending_node_deg = 6; // Долгота восходящего узла (Ω)
+  double argument_perihelion_deg = 7;      // Аргумент перицентра (ω)
+  double perihelion_passage_jd = 8;        // Время прохождения перигелия (JD)
 
-  // Сближение с Землёй
-  double closest_approach_jd = 9;   // дата сближения (JD)
-  double closest_distance_au = 10;  // расстояние в а.е.
+  // === Метрики качества
+  double rms_residual_deg = 9;     // Среднеквадратичная невязка, градусы
+
+  // === Сближение с Землёй
+  double closest_approach_jd = 10; // Дата сближения (JD)
+  double closest_distance_au = 11; // Расстояние при сближении (а.е.)
 }
