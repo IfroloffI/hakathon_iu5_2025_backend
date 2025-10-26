@@ -1,14 +1,23 @@
-Calc Service gRPC Generate:
+## Calc-api setup
 
 python -m venv venv
 
-venv\Scripts\Activate.ps1
 
-python -m grpc_tools.protoc -I ../contracts --python_out=. --grpc_python_out=. ../contracts/calc.proto
+### Activate venv
+**Windows:**
+`venv\Scripts\Activate.ps1
+`
 
-python .\server.py
+**Mac:**
+`source venv/bin/activate`
 
-Main Service gRPC Generate:
+#### Gen proto
+`python -m grpc_tools.protoc -I ../contracts --python_out=. --grpc_python_out=. ../contracts/calc.proto
+`
+#### Start server
+`python .\server.py
+`
+## Main Service gRPC Generate:
 
 mkdir -p api/main-api/src/calc/assets/proto
 
