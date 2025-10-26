@@ -15,7 +15,7 @@ export class WhitelistService {
   }
 
   has(tokenId: string): boolean {
-    return this.cache.has(tokenId);
+    return this.cache.get(tokenId) !== undefined;
   }
 
   del(tokenId: string): void {

@@ -20,6 +20,7 @@ export class CalcController {
   constructor(private readonly calcService: CalcService) {}
 
   @Post()
+  @UseGuards()
   async calculate(@Body() body: CalcRequestDto) {
     if (!body.observations || body.observations.length < 5) {
       throw new BadRequestException('At least 5 observations required');
