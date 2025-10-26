@@ -17,9 +17,16 @@ python -m venv venv
 #### Start server
 `python .\server.py
 `
+
+## Calc Service gRPC Generate:
+
 ## Main Service gRPC Generate:
 
 mkdir -p api/main-api/src/calc/assets/proto
 
 cp api/contracts/calc.proto api/main-api/src/calc/assets/proto/
 
+## Деплой:
+
+docker compose up -d mongodb redis calc-api
+docker compose up -d --build main-api
