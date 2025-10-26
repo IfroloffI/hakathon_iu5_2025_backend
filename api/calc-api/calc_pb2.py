@@ -24,19 +24,19 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ncalc.proto\x12\x04\x63\x61lc\"G\n\x0bObservation\x12\x10\n\x08ra_hours\x18\x01 \x01(\x01\x12\x13\n\x0b\x64\x65\x63_degrees\x18\x02 \x01(\x01\x12\x11\n\ttimestamp\x18\x03 \x01(\x01\";\n\x10\x43\x61lculateRequest\x12\'\n\x0cobservations\x18\x01 \x03(\x0b\x32\x11.calc.Observation\"\x9e\x02\n\x11\x43\x61lculateResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05\x65rror\x18\x02 \x01(\t\x12\x1a\n\x12semi_major_axis_au\x18\x03 \x01(\x01\x12\x14\n\x0c\x65\x63\x63\x65ntricity\x18\x04 \x01(\x01\x12\x17\n\x0finclination_deg\x18\x05 \x01(\x01\x12$\n\x1clongitude_ascending_node_deg\x18\x06 \x01(\x01\x12\x1f\n\x17\x61rgument_perihelion_deg\x18\x07 \x01(\x01\x12\x1d\n\x15perihelion_passage_jd\x18\x08 \x01(\x01\x12\x1b\n\x13\x63losest_approach_jd\x18\t \x01(\x01\x12\x1b\n\x13\x63losest_distance_au\x18\n \x01(\x01\x32T\n\x0f\x43ometCalculator\x12\x41\n\x0e\x43\x61lculateOrbit\x12\x16.calc.CalculateRequest\x1a\x17.calc.CalculateResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\ncalc.proto\x12\x04\x63\x61lc\"\xdb\x01\n\x0bObservation\x12\x10\n\x08ra_hours\x18\x01 \x01(\x01\x12\x13\n\x0b\x64\x65\x63_degrees\x18\x02 \x01(\x01\x12\x11\n\ttimestamp\x18\x03 \x01(\x01\x12\x13\n\x0b\x61lt_degrees\x18\x04 \x01(\x01\x12\x12\n\naz_degrees\x18\x05 \x01(\x01\x12\x18\n\x10observer_lat_deg\x18\x06 \x01(\x01\x12\x18\n\x10observer_lon_deg\x18\x07 \x01(\x01\x12\x19\n\x11observer_height_m\x18\x08 \x01(\x01\x12\x1a\n\x12uncertainty_arcsec\x18\t \x01(\x01\"O\n\x10\x43\x61lculateRequest\x12\'\n\x0cobservations\x18\x01 \x03(\x0b\x32\x11.calc.Observation\x12\x12\n\ndays_ahead\x18\x02 \x01(\x05\"\xb8\x02\n\x11\x43\x61lculateResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\r\n\x05\x65rror\x18\x02 \x01(\t\x12\x1a\n\x12semi_major_axis_au\x18\x03 \x01(\x01\x12\x14\n\x0c\x65\x63\x63\x65ntricity\x18\x04 \x01(\x01\x12\x17\n\x0finclination_deg\x18\x05 \x01(\x01\x12$\n\x1clongitude_ascending_node_deg\x18\x06 \x01(\x01\x12\x1f\n\x17\x61rgument_perihelion_deg\x18\x07 \x01(\x01\x12\x1d\n\x15perihelion_passage_jd\x18\x08 \x01(\x01\x12\x18\n\x10rms_residual_deg\x18\t \x01(\x01\x12\x1b\n\x13\x63losest_approach_jd\x18\n \x01(\x01\x12\x1b\n\x13\x63losest_distance_au\x18\x0b \x01(\x01\x32T\n\x0f\x43ometCalculator\x12\x41\n\x0e\x43\x61lculateOrbit\x12\x16.calc.CalculateRequest\x1a\x17.calc.CalculateResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'calc_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_OBSERVATION']._serialized_start=20
-  _globals['_OBSERVATION']._serialized_end=91
-  _globals['_CALCULATEREQUEST']._serialized_start=93
-  _globals['_CALCULATEREQUEST']._serialized_end=152
-  _globals['_CALCULATERESPONSE']._serialized_start=155
-  _globals['_CALCULATERESPONSE']._serialized_end=441
-  _globals['_COMETCALCULATOR']._serialized_start=443
-  _globals['_COMETCALCULATOR']._serialized_end=527
+  _globals['_OBSERVATION']._serialized_start=21
+  _globals['_OBSERVATION']._serialized_end=240
+  _globals['_CALCULATEREQUEST']._serialized_start=242
+  _globals['_CALCULATEREQUEST']._serialized_end=321
+  _globals['_CALCULATERESPONSE']._serialized_start=324
+  _globals['_CALCULATERESPONSE']._serialized_end=636
+  _globals['_COMETCALCULATOR']._serialized_start=638
+  _globals['_COMETCALCULATOR']._serialized_end=722
 # @@protoc_insertion_point(module_scope)
