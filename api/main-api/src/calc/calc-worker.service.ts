@@ -15,7 +15,7 @@ export class CalcWorkerService implements OnModuleInit {
     private readonly redisService: RedisService,
     private readonly calcService: CalcService,
     private readonly notificationService: NotificationService
-  ) {}
+  ) { }
 
   async onModuleInit() {
     this.client = await this.redisService.getClient();
@@ -81,12 +81,16 @@ export class CalcWorkerService implements OnModuleInit {
 
       await this.calcService.updateCalc(jobId, { status: 'processing' });
 
+      this.notificationService.emitCalcUpdate(socketId, 'status', 'processing');
+
+
       const result = await this.calcService.calculateOrbit(observations);
 
       await this.calcService.updateCalc(jobId, {
         status: 'completed',
         ...result,
       });
+      this.notificationService.emitCalcUpdate(socketId, 'status', 'completed');
 
       this.notificationService.emitCalcUpdate(socketId, 'result', { jobId, ...result });
       await this.client.xAck(this.streamKey, this.groupName, id);
